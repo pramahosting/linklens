@@ -3,6 +3,9 @@ requests
 pandas
 selenium
 Pillow
+webdriver-manager
+
+
 
 
 
