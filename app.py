@@ -31,7 +31,7 @@ col_title, col_right = st.columns([6, 2])  # Define these columns before using t
 
 with col_title:
     # Load and resize the uploaded image
-    img_path = "logo.png"
+    img_path = "finallogo.png"
     img = Image.open(img_path)
     img = img.resize((40, 40))  # resize to emoji size
 
@@ -195,4 +195,5 @@ if run_button:
 
     finally:
         scraper.close()
+
 
