@@ -29,7 +29,6 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy project files
-COPY .streamlit /app/.streamlit
 COPY auth /app/auth
 COPY backend /app/backend
 COPY data /app/data
@@ -57,4 +56,5 @@ ENV STREAMLIT_SERVER_PORT=8501
 EXPOSE 8501
 
 CMD ["streamlit", "run", "app.py"]
+
 
