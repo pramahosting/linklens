@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "name": "Pramod Singh",
+    "email": "p@ex.com",
+    "password_hash": "$2b$12$0ZKRy1gffL49.CtpFjqfQeLpWgae5xsfZR1BHV58Num6tFGJU/YCO",
+    "address": "32 Gumnut Road, Cherrybrook, NSW 2126",
+    "company": "Prama AI",
+    "phone": "0409 809 164",
+    "is_admin": false,
+    "reset_token": null,
+    "reset_expiry": null
+  }
+]
