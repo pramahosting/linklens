@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "name": "Pramod Singh",
+    "email": "p@ex.com",
+    "password_hash": "$2b$12$K7hB8Unr8QFLfzYMBLldweFNzLPZDIKzU/TCZvDJroA9npgCbDgXC",
+    "address": "32 Gumnut Road",
+    "company": "Prama AI",
+    "phone": "0409809164",
+    "is_admin": false,
+    "reset_token": "6e083bb4-c036-4ada-a807-e3199f63e8c5",
+    "reset_expiry": "2025-12-05T23:51:17.586318"
+  }
+]

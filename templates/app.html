@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{{ title if title else "Recruiter App" }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Spinner styles */
+        .spinner-container {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #e3f2fd;
+            border-radius: 6px;
+            border-left: 4px solid #1a73e8;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e3f2fd;
+            border-top: 3px solid #1a73e8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .spinner-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a73e8;
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="brand">
+        <img src="{{ url_for('static', filename='app_icon.png') }}" alt="Logo" class="brand-logo">
+        LinkLens Agent
+    </div>
+
+    <div>
+        {% if session.get('logged_in') %}
+            <span style="margin-right:10px;color:#374151;font-weight:600">{{ user.name }}</span>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('signup') }}">Sign Up</a>
+        {% endif %}
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- LOGIN PAGE -->
+    {% if screen == "login" %}
+    <div class="auth-wrap">
+        <div class="card">
+            <h1>Welcome to LinkLens Agent</h1>
+            {% if error %}
+            <div class="small" style="color:#b91c1c">{{ error }}</div>
+            {% endif %}
+            <div class="small">Sign in to run LinkLens Agent.</div>
+            <form method="POST" style="margin-top:5px;">
+                <div class="form-row">
+                    <label>Email</label>
+                    <input type="email" name="email" required />
+                </div>
+                <div class="form-row">
+                    <label>Password</label>
+                    <input type="password" name="password" required />
+                </div>
+                <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+                    <button class="btn" type="submit">Login</button>
+                    <a class="btn ghost" href="{{ url_for('reset_request') }}">Forgot password?</a>
+                </div>
+            </form>
+            <p class="small-note" style="margin-top:14px;">
+                Don't have an account? 
+                <a href="{{ url_for('signup') }}" style="color:var(--accent);font-weight:700;">Create one</a>
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- SIGNUP PAGE -->
+    {% if screen == "signup" %}
+    <div class="auth-wrap">
+        <div class="card">
+            <h1>Create account</h1>
+            {% if error %}
+            <div class="small" style="color:#b91c1c">{{ error }}</div>
+            {% endif %}
+            <form method="POST" style="margin-top:12px;">
+                <div class="form-row">
+                    <label>Full name</label>
+                    <input type="text" name="name" required />
+                </div>
+                <div class="form-row">
+                    <label>Email</label>
+                    <input type="email" name="email" required />
+                </div>
+                <div class="form-row">
+                    <label>Password</label>
+                    <input type="password" name="password" required />
+                </div>
+                <div class="form-row">
+                    <label>Address (optional)</label>
+                    <textarea name="address" rows="2"></textarea>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:8px;">
+                    <button class="btn" type="submit">Sign up</button>
+                    <a class="btn ghost" href="{{ url_for('login') }}">Back to login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- RESET REQUEST PAGE -->
+    {% if screen == "reset_request" %}
+    <div class="auth-wrap">
+        <div class="card">
+            <h1>Reset Password</h1>
+            {% if message %}
+            <div class="small" style="color:var(--accent)">{{ message }}</div>
+            {% endif %}
+            <form method="POST" style="margin-top:12px;">
+                <div class="form-row">
+                    <label>Email</label>
+                    <input type="email" name="email" required />
+                </div>
+                <div style="margin-top:12px;">
+                    <button class="btn" type="submit">Send Reset Link</button>
+                </div>
+            </form>
+            <p class="small-note" style="margin-top:14px;">
+                <a href="{{ url_for('login') }}" style="color:var(--accent);font-weight:700;">Back to login</a>
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- RESET PASSWORD PAGE -->
+    {% if screen == "reset_password" %}
+    <div class="auth-wrap">
+        <div class="card">
+            <h1>Set New Password</h1>
+            {% if error %}
+            <div class="small" style="color:#b91c1c">{{ error }}</div>
+            {% endif %}
+            <form method="POST" style="margin-top:12px;">
+                <div class="form-row">
+                    <label>New Password</label>
+                    <input type="password" name="new_password" required />
+                </div>
+                <div style="margin-top:12px;">
+                    <button class="btn" type="submit">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- DASHBOARD PAGE -->
+    {% if screen == "dashboard" %}
+    <div class="app-grid" style="grid-template-columns:1fr 2fr; gap:12px; height:auto;">
+
+        <!-- LEFT PANE: Scraper Form -->
+        <section class="form-card">
+            <form method="POST" enctype="multipart/form-data">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                    <!-- Left: Heading -->
+                    <h3 style="margin-top:0;">Profile Scraper</h3>
+
+                    <!-- Right: Mode + File Input (right aligned) -->
+                    <div style="display:flex; flex-direction:column; align-items:flex-end;">
+
+                        <!-- Label -->
+                        <label for="scraper_mode"
+                            style="font-size:14px; font-weight:700; color:#0a3d91; margin-bottom:2px;">
+                            Scraper Mode
+                        </label>
+
+                        <!-- Dropdown -->
+                        <select name="scraper_mode" id="scraper_mode"
+                            style="font-size:12px; width:120px; margin-bottom:6px;">
+                            <option value="full" {% if last_inputs and last_inputs.scraper_mode=='full' %}selected{% endif %}>Full</option>
+                            <option value="html_only" {% if last_inputs and last_inputs.scraper_mode=='html_only' %}selected{% endif %}>HTML Only</option>
+                            <option value="data_only" {% if last_inputs and last_inputs.scraper_mode=='data_only' %}selected{% endif %}>Data Only</option>
+                            <option value="html_and_data" {% if last_inputs and last_inputs.scraper_mode=='html_and_data' %}selected{% endif %}>HTML and Data</option>
+                        </select>
+
+                        <!-- File upload box -->
+                        <div id="file_input_container"
+                            style="display:none; background-color:#d0ebff; padding:6px 8px; border-radius:4px;
+                                color:#003366; font-weight:600; width:160px; text-align:left;">
+                            <label for="input_excel" style="margin-right:4px; font-size:11px;">Links file:</label>
+                            <input type="file" name="input_excel" id="input_excel" accept=".xlsx,.xls" style="font-size:10px; width:100%;" />
+                        </div>
+                    </div>
+                </div>
+
+                <h4 style="margin:12px 0 6px 0; font-size:14px; color:darkblue; font-weight:700;">LinkedIn Login</h4>
+                <div class="form-row">
+                    <label>LinkedIn Username</label>
+                    <input type="text" name="linkedin_user"
+                        value="{{ last_inputs.linkedin_user if last_inputs and last_inputs.linkedin_user else '' }}" required />
+                </div>
+                <div class="form-row">
+                    <label>LinkedIn Password</label>
+                    <input type="password" name="linkedin_pass"
+                        value="{{ last_inputs.linkedin_pass if last_inputs and last_inputs.linkedin_pass else '' }}" required />
+                </div>
+
+                <h4 style="margin:12px 0 6px 0; font-size:14px; color:darkblue; font-weight:700;">Search Parameters</h4>
+                <div class="form-row">
+                    <label>Job title (keywords)</label>
+                    <input type="text" name="job_title" placeholder="Data Architect"
+                        value="{{ last_inputs.job_title if last_inputs and last_inputs.job_title else '' }}" required />
+                </div>
+
+                <div class="form-row" style="display:flex; gap:8px;">
+                    <div style="flex:1;">
+                        <label>Country</label>
+                        <select name="country" id="country-select" required>
+                            <option value="">Select Country</option>
+                            <option {% if last_inputs and last_inputs.country=='Australia' %}selected{% endif %}>Australia</option>
+                            <option {% if last_inputs and last_inputs.country=='USA' %}selected{% endif %}>USA</option>
+                            <option {% if last_inputs and last_inputs.country=='India' %}selected{% endif %}>India</option>
+                            <option {% if last_inputs and last_inputs.country=='UK' %}selected{% endif %}>UK</option>
+                            <option {% if last_inputs and last_inputs.country=='Canada' %}selected{% endif %}>Canada</option>
+                        </select>
+                    </div>
+                    <div style="flex:1;">
+                        <label>City</label>
+                        <select name="city" id="city-select">
+                            <option value="">All</option>
+                            <option {% if last_inputs and last_inputs.city=='Sydney' %}selected{% endif %}>Sydney</option>
+                            <option {% if last_inputs and last_inputs.city=='New York' %}selected{% endif %}>New York</option>
+                            <option {% if last_inputs and last_inputs.city=='London' %}selected{% endif %}>London</option>
+                            <option {% if last_inputs and last_inputs.city=='Toronto' %}selected{% endif %}>Toronto</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row" style="display:flex; align-items:center; gap:8px;">
+                    <div style="flex:2;">
+                        <label for="max_results">Max results:
+                            <span id="max-results-value">
+                                {{ last_inputs.max_results if last_inputs and last_inputs.max_results else 1 }}
+                            </span>
+                        </label>
+                        <input type="range" name="max_results" id="max_results" min="1" max="200"
+                            value="{{ last_inputs.max_results if last_inputs and last_inputs.max_results else 1 }}"
+                            oninput="document.getElementById('max-results-value').textContent=this.value">
+                    </div>
+                    <div style="flex:1; display:flex; align-items:center; gap:4px;">
+                        <input type="checkbox" name="headless"
+                            {% if last_inputs and last_inputs.headless %}checked{% endif %}/>
+                        <label style="margin:0;">Run headless</label>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                    <button id="run-btn" type="submit" class="btn btn-primary">Run Scraper</button>
+                    <button id="reset-btn" type="button" class="btn btn-secondary">Reset</button>
+                </div>
+
+                <!-- SPINNER CONTAINER - Added here below the buttons -->
+                <div id="scraper-spinner" class="spinner-container">
+                    <div class="spinner"></div>
+                    <span class="spinner-text">Scraper Running...</span>
+                </div>
+            </form>
+        </section>
+
+        <!-- RIGHT PANE: Status + Detailed Data -->
+        <section style="display:flex; flex-direction:column; gap:12px; height:100%;">
+
+            <aside class="status-card" style="overflow:auto; flex:1;">
+                <h3 style="margin-top:0;">Status</h3>
+
+                <!-- Progress UI (JS controlled) -->
+                <div id="progress-container" style="display:none; margin-bottom:8px;">
+                    <div style="font-size:12px; font-weight:700; margin-bottom:4px;">
+                        Progress: <span id="progress-count">0 / 0</span>
+                    </div>
+                    <div style="background:#e5e7eb; border-radius:6px; overflow:hidden; height:10px;">
+                        <div id="progress-bar"
+                            style="height:10px; width:0%; background:#2563eb; transition:width 0.3s;">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="status-box" aria-live="polite">
+                    <div class="status-line">Ready</div>
+                </div>
+            </aside>
+
+            <div class="results-card" id="results-table-area" style="overflow:auto; flex:2;">
+                <h3 style="margin-top:0;">Data Details</h3>
+
+                {% if results %}
+                <div class="table-responsive">
+                    <table class="table" id="results-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Title</th>
+                                <th>Company</th>
+                                <th>Location</th>
+                                <!-- NEW COLUMNS -->
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Skills</th>
+                                <th>Experience</th>
+                                <th>Source_URL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in results %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ row.get('Name', '') }}</td>
+                                <td>{{ row.get('Title', '') }}</td>
+                                <td>{{ row.get('Company', '') }}</td>
+                                <td>{{ row.get('Location', '') }}</td>
+                                <td>{{ row.get('Email', '') }}</td>
+                                <td>{{ row.get('Phone', '') }}</td>
+                                <td class="expandable-cell" data-full-content="{{ row.get('Skills', '') }}">
+                                    {{ (row.get('Skills', '')[:30] + '...') if row.get('Skills', '')|length > 30 else row.get('Skills', '') }}
+                                </td>
+                                <td class="expandable-cell" data-full-content="{{ row.get('Experience', '') }}">
+                                    {{ (row.get('Experience', '')[:30] + '...') if row.get('Experience', '')|length > 30 else row.get('Experience', '') }}
+                                </td>
+                                <td><a href="{{ row.get('Source_URL', '#') }}" target="_blank">View Profile</a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top:10px;">
+                    <a class="btn" id="download-btn" href="{{ url_for('linkedin_download') }}">
+                        Download Excel
+                    </a>
+                </div>
+
+                {% if status_html_count %}
+                <div class="small" style="margin-top:8px;color:darkgreen;">
+                    💾 {{ status_html_count }} HTML files saved to <strong>{{ temp_folder }}</strong>
+                </div>
+                {% endif %}
+
+                {% if final_data_file %}
+                <div class="small" style="margin-top:4px;color:blue;">
+                    📄 Final data file saved at <strong>{{ final_data_file }}</strong>
+                </div>
+                {% endif %}
+
+                {% else %}
+                <p class="small" id="no-results">No results yet. Run the scraper to collect data.</p>
+                {% endif %}
+
+            </div>
+        </section>
+    </div>
+
+    <!-- Popup Modal for Skills/Experience -->
+    <div id="popup-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+        background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:1000;">
+        <div style="background:#fff; padding:20px; border-radius:8px; max-width:600px; width:90%; max-height:80%; 
+            overflow:auto; position:relative;">
+            <button id="modal-close" style="position:absolute; top:10px; right:10px; background:none; border:none; 
+                font-size:20px; cursor:pointer; color:#666; font-weight:bold;">✖</button>
+            <h3 id="modal-title" style="margin-top:0; color:#1a73e8;">Details</h3>
+            <pre id="modal-content" style="white-space:pre-wrap; font-family:inherit; font-size:13px; line-height:1.6;"></pre>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+    {% endif %}
+
+</div>
+</body>
+</html>
